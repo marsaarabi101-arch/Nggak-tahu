@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Malas: Tantangan Fokus</title>
+    <style>
+        :root {
+            --bg-awal: #2b2d42; /* Warna gelap awal (malas) */
+            --pink-soft: #ff85a1;
+            --pink-vibrant: #ff477e;
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-awal);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 1s ease;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .container {
+            text-align: center;
+            z-index: 10;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.5s ease;
+        }
+
+        .container.pink-mode {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--pink-soft);
+            box-shadow: 0 10px 30px rgba(255, 133, 161, 0.3);
+        }
+
+        h1 {
+            color: var(--white);
+            margin-bottom: 5px;
+            transition: color 0.5s;
+        }
+
+        .pink-mode h1 { color: var(--pink-vibrant); }
+
+        #timer {
+            font-size: 4rem;
+            font-weight: bold;
+            color: var(--white);
+            margin: 20px 0;
+            transition: color 0.5s;
+        }
+
+        .pink-mode #timer { color: var(--pink-dark); }
+
+        /* Elemen Buku */
+        #buku-btn {
+            font-size: 100px;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            transition: transform 0.1s, filter 0.3s;
+            filter: grayscale(100%);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        #buku-btn.active {
+            filter: grayscale(0%);
+            transform: scale(0.9);
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes pulse {
+            from { transform: scale(0.9); }
+            to { transform: scale(0.85); }
+        }
+
+        /* Stiker Unik Bergerak */
+        .sticker {
+            position: absolute;
+            font-size: 40px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .pink-mode .sticker { opacity: 1; }
+
+        #status {
+            color: var(--white);
+            font-weight: bold;
+            height: 20px;
+        }
+        .pink-mode #status { color: var(--pink-vibrant); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Stiker Dekorasi -->
+    <div class="sticker" style="top: 10%; left: 10%; animation: float 4s infinite;">🚀</div>
+    <div class="sticker" style="top: 20%; right: 15%; animation: float 3s infinite 1s;">💡</div>
+    <div class="sticker" style="bottom: 15%; left: 20%; animation: float 5s infinite 0.5s;">⭐</div>
+    <div class="sticker" style="bottom: 10%; right: 10%; animation: float 2s infinite;">💪</div>
+
+    <div class="container" id="box">
+        <h1>Lawan Malasmu!</h1>
+        <p id="status">Tahan buku untuk mulai produktif...</p>
+        
+        <div id="buku-btn">📖</div>
+        
+        <div id="timer">0.00s</div>
+    </div>
+
+    <script>
+        const buku = document.getElementById('buku-btn');
+        const timerDisplay = document.getElementById('timer');
+        const body = document.body;
+        const box = document.getElementById('box');
+        const statusText = document.getElementById('status');
+
+        let startTime;
+        let timerInterval;
+        let isHolding = false;
+
+        function suaraPeringatan() {
+            const pesan = new SpeechSynthesisUtterance("Ayo Fokus!");
+            pesan.lang = 'id-ID';
+            pesan.rate = 1.2;
+            window.speechSynthesis.speak(pesan);
+        }
+
+        function mulaiFokus() {
+            if (isHolding) return;
+            isHolding = true;
+            
+            startTime = Date.now();
+            buku.classList.add('active');
+            statusText.innerText = "Bagus! Pertahankan...";
+            
+            timerInterval = setInterval(() => {
+                const sekarang = Date.now();
+                const durasi = (sekarang - startTime) / 1000;
+                timerDisplay.innerText = durasi.toFixed(2) + "s";
+
+                // Jika sudah lebih dari 2 detik, mulai berubah jadi Pink & Putih
+                if (durasi > 2) {
+                    body.style.backgroundColor = "#fff0f3"; // Pink sangat muda
+                    box.classList.add('pink-mode');
+                    body.style.color = "#ff477e";
+                }
+                
+                // Semakin lama semakin "Pink"
+                if (durasi > 10) {
+                    body.style.backgroundColor = "#ffc2d1";
+                }
+            }, 10);
+        }
+
+        function berhentiFokus() {
+            if (!isHolding) return;
+            isHolding = false;
+            
+            clearInterval(timerInterval);
+            buku.classList.remove('active');
+            
+            // Suara peringatan
+            suaraPeringatan();
+            
+            // Reset Visual
+            alert("Jangan menyerah! Kamu bertahan selama " + timerDisplay.innerText);
+            
+            timerDisplay.innerText = "0.00s";
+            body.style.backgroundColor = "#2b2d42"; // Kembali ke gelap
+            box.classList.remove('pink-mode');
+            statusText.innerText = "Yah, dilepas... Tekan lagi!";
+        }
+
+        // Mouse Events
+        buku.addEventListener('mousedown', mulaiFokus);
+        window.addEventListener('mouseup', berhentiFokus);
+
+        // Touch Events (Untuk HP)
+        buku.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            mulaiFokus();
+        });
+        window.addEventListener('touchend', berhentiFokus);
+
+    </script>
+</body>
+      </html>
+      
